@@ -1,7 +1,7 @@
 import mongoose from "mongoose";
 
 import { MongoMemoryServer } from "mongodb-memory-server";
-import ENV from "../config.js"
+import ENV from "../env/config.js"
 
 async function connect() {
     //const mongod = await MongoMemoryServer.create()

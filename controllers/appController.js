@@ -1,7 +1,7 @@
 import UserModel from '../model/User.model.js'
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
-import ENV from '../config.js'
+import ENV from '../env/config.js'
 import otpGenerator from 'otp-generator';
 
 /** middleware for verify user */
@@ -33,66 +33,66 @@ export async function verifyUser(req, res, next) {
   "profile": ""
 }
 */
-export async function register(req, res) {
+// export async function register(req, res) {
 
-    try {
-        const { username, password, profile, email } = req.body;
+//     try {
+//         const { username, password, profile, email } = req.body;
 
-        // check the existing user
-        const existUsername = new Promise((resolve, reject) => {
-            UserModel.findOne({ username }, function (err, user) {
-                if (err) reject(new Error(err))
-                if (user) reject({ error: "Please use unique username" });
+//         // check the existing user
+//         const existUsername = new Promise((resolve, reject) => {
+//             UserModel.findOne({ username }, function (err, user) {
+//                 if (err) reject(new Error(err))
+//                 if (user) reject({ error: "Please use unique username" });
 
-                resolve();
-            })
-        });
+//                 resolve();
+//             })
+//         });
 
-        // check for existing email
-        const existEmail = new Promise((resolve, reject) => {
-            UserModel.findOne({ email }, function (err, email) {
-                if (err) reject(new Error(err))
-                if (email) reject({ error: "Please use unique Email" });
+//         // check for existing email
+//         const existEmail = new Promise((resolve, reject) => {
+//             UserModel.findOne({ email }, function (err, email) {
+//                 if (err) reject(new Error(err))
+//                 if (email) reject({ error: "Please use unique Email" });
 
-                resolve();
-            })
-        });
-
-
-        Promise.all([existUsername, existEmail])
-            .then(() => {
-                if (password) {
-                    bcrypt.hash(password, 10)
-                        .then(hashedPassword => {
-
-                            const user = new UserModel({
-                                username,
-                                password: hashedPassword,
-                                profile: profile || '',
-                                email
-                            });
-
-                            // return save result as a response
-                            user.save()
-                                .then(result => res.status(201).send({ msg: "User Register Successfully" }))
-                                .catch(error => res.status(500).send({ error }))
-
-                        }).catch(error => {
-                            return res.status(500).send({
-                                error: "Enable to hashed password"
-                            })
-                        })
-                }
-            }).catch(error => {
-                return res.status(500).send({ error })
-            })
+//                 resolve();
+//             })
+//         });
 
 
-    } catch (error) {
-        return res.status(500).send(error);
-    }
+//         Promise.all([existUsername, existEmail])
+//             .then(() => {
+//                 if (password) {
+//                     bcrypt.hash(password, 10)
+//                         .then(hashedPassword => {
 
-}
+//                             const user = new UserModel({
+//                                 username,
+//                                 password: hashedPassword,
+//                                 profile: profile || '',
+//                                 email
+//                             });
+
+//                             // return save result as a response
+//                             user.save()
+//                                 .then(result => res.status(201).send({ msg: "User Register Successfully" }))
+//                                 .catch(error => res.status(500).send({ error }))
+
+//                         }).catch(error => {
+//                             return res.status(500).send({
+//                                 error: "Enable to hashed password"
+//                             })
+//                         })
+//                 }
+//             }).catch(error => {
+//                 return res.status(500).send({ error })
+//             })
+
+
+//     } catch (error) {
+//         return res.status(500).send(error);
+//     }
+
+// }
 
 
 /** POST: http://localhost:8000/api/login 
@@ -278,4 +278,45 @@ export async function resetPassword(req, res) {
 
 
 
+// import bcrypt from 'bcrypt';
+// import UserModel from 'path/to/UserModel'; // Import your UserModel module
+
+export async function register(req, res) {
+    try {
+        const { username, password, profile, email } = req.body;
+
+        // Check if username already exists
+        const existingUsername = await UserModel.findOne({ username });
+        if (existingUsername) {
+            return res.status(400).json({ error: "Username already exists" });
+        }
+
+        // Check if email already exists
+        const existingEmail = await UserModel.findOne({ email });
+        if (existingEmail) {
+            return res.status(400).json({ error: "Email already exists" });
+        }
+
+        // Hash the password
+        const hashedPassword = await bcrypt.hash(password, 10);
+
+        // Create a new user instance
+        const user = new UserModel({
+            username,
+            password: hashedPassword,
+            profile: profile || '',
+            email
+        });
+
+        // Save the user to the database
+        const savedUser = await user.save();
+
+        // Send success response
+        return res.status(201).json({ msg: "User registered successfully", user: savedUser });
+    } catch (error) {
+        // Handle errors
+        console.error("Registration error:", error);
+        return res.status(500).json({ error: "Internal server error" });
+    }
+}
 
