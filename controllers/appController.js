@@ -142,30 +142,30 @@ export async function login(req, res) {
 
 
 /** GET: http://localhost:8000/api/user/example123 */
-export async function getUser(req, res) {
+// export async function getUser(req, res) {
 
-    const { username } = req.params;
+//     const { username } = req.params;
 
-    try {
+//     try {
 
-        if (!username) return res.status(501).send({ error: "Invalid Username" });
+//         if (!username) return res.status(501).send({ error: "Invalid Username" });
 
-        UserModel.findOne({ username }, function (err, user) {
-            if (err) return res.status(500).send({ err });
-            if (!user) return res.status(501).send({ error: "Couldn't Find the User" });
+//         UserModel.findOne({ username }, function (err, user) {
+//             if (err) return res.status(500).send({ err });
+//             if (!user) return res.status(501).send({ error: "Couldn't Find the User" });
 
-            /** remove password from user */
-            // mongoose return unnecessary data with object so convert it into json
-            const { password, ...rest } = Object.assign({}, user.toJSON());
+//             /** remove password from user */
+//             // mongoose return unnecessary data with object so convert it into json
+//             const { password, ...rest } = Object.assign({}, user.toJSON());
 
-            return res.status(201).send(rest);
-        })
+//             return res.status(201).send(rest);
+//         })
 
-    } catch (error) {
-        return res.status(404).send({ error: "Cannot Find User Data" });
-    }
+//     } catch (error) {
+//         return res.status(404).send({ error: "Cannot Find User Data" });
+//     }
 
-}
+// }
 
 
 /** PUT: http://localhost:8000/api/updateuser 
@@ -178,31 +178,56 @@ body: {
     profile : ''
 }
 */
+// export async function updateUser(req, res) {
+//     try {
+
+//         // const id = req.query.id;
+//         const { userId } = req.user;
+
+//         if (userId) {
+//             const body = req.body;
+
+//             // update the data
+//             UserModel.updateOne({ _id: userId }, body, function (err, data) {
+//                 if (err) throw err;
+
+//                 return res.status(201).send({ msg: "Record Updated...!" });
+//             })
+
+//         } else {
+//             return res.status(401).send({ error: "User Not Found...!" });
+//         }
+
+//     } catch (error) {
+//         return res.status(401).send({ error });
+//     }
+// }
+
 export async function updateUser(req, res) {
     try {
-
-        // const id = req.query.id;
         const { userId } = req.user;
 
         if (userId) {
             const body = req.body;
 
-            // update the data
-            UserModel.updateOne({ _id: userId }, body, function (err, data) {
-                if (err) throw err;
+            // Update the data using await
+            const result = await UserModel.updateOne({ _id: userId }, body);
 
+
+            // Check the result of the update operation
+            if (result) {
                 return res.status(201).send({ msg: "Record Updated...!" });
-            })
-
+            } else {
+                throw new Error("Failed to update record");
+            }
         } else {
             return res.status(401).send({ error: "User Not Found...!" });
         }
 
     } catch (error) {
-        return res.status(401).send({ error });
+        return res.status(401).send({ error: error.message });
     }
 }
-
 
 /** GET: http://localhost:8000/api/generateOTP */
 export async function generateOTP(req, res) {
@@ -317,6 +342,30 @@ export async function register(req, res) {
         // Handle errors
         console.error("Registration error:", error);
         return res.status(500).json({ error: "Internal server error" });
+    }
+}
+
+
+
+export async function getUser(req, res) {
+    const { username } = req.params;
+
+    if (!username) {
+        return res.status(400).send({ error: "Invalid Username" });
+    }
+
+    try {
+        const user = await UserModel.findOne({ username }).exec();
+
+        if (!user) {
+            return res.status(404).send({ error: "User not found" });
+        }
+
+        const { password, ...rest } = user.toObject(); // Convert Mongoose document to plain JavaScript object
+        return res.status(200).send(rest);
+    } catch (error) {
+        console.error("Error retrieving user:", error);
+        return res.status(500).send({ error: "Internal Server Error" });
     }
 }
 
