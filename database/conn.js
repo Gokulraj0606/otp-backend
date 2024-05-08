@@ -1,6 +1,6 @@
 import mongoose from "mongoose";
 
-import { MongoMemoryServer } from "mongodb-memory-server";
+//import { MongoMemoryServer } from "mongodb-memory-server";
 import ENV from "../env/config.js"
 
 async function connect() {
