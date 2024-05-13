@@ -27,5 +27,7 @@
     "openssl": "^2.0.0",
     "otp-generator": "^4.0.1"
   },
-  "engines":{"node":"16"}
+  "engines": {
+    "node": "20.11.1"
+  }
 }
