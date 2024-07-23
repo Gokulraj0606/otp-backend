@@ -1,18 +1,15 @@
 import nodemailer from 'nodemailer';
 import Mailgen from 'mailgen';
-
-//import ENV from '../env/config.js';
 import dotenv from 'dotenv';
+
 dotenv.config();
 
-// https://ethereal.email/create
+// Gmail SMTP configuration
 let nodeConfig = {
-    host: "smtp.ethereal.email",
-    port: 587,
-    secure: false, // true for 465, false for other ports
+    service: 'gmail',
     auth: {
-        user: process.env.EMAIL, // generated ethereal user
-        pass: process.env.PASSWORD, // generated ethereal password
+        user: process.env.EMAIL, // your Gmail address
+        pass: process.env.PASSWORD, // your Gmail password or App Password
     }
 }
 
