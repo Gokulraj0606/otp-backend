@@ -4,7 +4,7 @@ import dotenv from 'dotenv';
 
 dotenv.config();
 
-// Gmail SMTP mail configuration
+// Gmail SMTP mail configurations
 let nodeConfig = {
     service: 'gmail',
     auth: {
